@@ -1,0 +1,237 @@
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121e;
+  --panel-bg: rgba(255, 255, 255, 0.03);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-primary: #e2e2e7;
+  --text-secondary: #94949e;
+  --accent-cyan: #00f2ff;
+  --accent-purple: #9d50bb;
+  --accent-red: #ff2d55;
+  --accent-green: #34c759;
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  height: 100vh;
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+}
+
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 16px;
+  gap: 16px;
+  background: radial-gradient(circle at 50% 0%, #1a1a2e 0%, #0a0a0f 70%);
+}
+
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.header-bar {
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.brand {
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  font-size: 1.1rem;
+  background: linear-gradient(to right, var(--accent-cyan), var(--accent-purple));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.panel-header {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+/* New Layout Grid */
+.blueprint-area {
+  height: 220px;
+  flex-shrink: 0;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr 340px;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+}
+
+.insights-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+}
+
+.diff-area {
+  flex: 1;
+  min-height: 200px;
+}
+
+.terminal-area {
+  height: 300px;
+  background: #000;
+}
+
+/* Mission Blueprint Visuals */
+.mission-blueprint-scroll {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  display: flex;
+  align-items: center;
+  padding: 20px;
+}
+
+.blueprint-empty {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.blueprint-tree {
+  display: flex;
+  gap: 40px;
+  padding: 0 40px;
+}
+
+.blueprint-node-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.blueprint-node {
+  width: 220px;
+  padding: 12px;
+  background: rgba(30, 30, 45, 0.6);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.blueprint-node-container.active .blueprint-node {
+  border-color: var(--accent-cyan);
+  background: rgba(0, 242, 255, 0.05);
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+}
+
+.blueprint-node-container.completed .blueprint-node {
+  opacity: 0.7;
+  border-color: var(--accent-green);
+}
+
+.node-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.node-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.node-id {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--accent-purple);
+  margin-bottom: 2px;
+}
+
+.node-desc {
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.blueprint-children {
+  display: flex;
+  align-items: center;
+}
+
+.connector-line {
+  width: 40px;
+  height: 2px;
+  background: var(--border-color);
+}
+
+.children-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Animations */
+.pulse {
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+.icon-active { color: var(--accent-cyan); }
+.icon-success { color: var(--accent-green); }
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
