@@ -1,14 +1,17 @@
-# 🕶️ Camel-Reviewer: Agentic Code Auditor
+# 🕶️ ACRO: Agentic Cyber-Research & Orchestration
 
 ### *Autonomous Cybersecurity Research & Orchestration Framework*
 
-**Camel-Reviewer** is a next-generation "Glass Box" simulation environment built on the **CAMEL-AI** multi-agent framework. It provides a transparent, real-time visualization of autonomous agents (Auditors, Fixers, Strategists) as they perform vulnerability research, reconnaissance, and automated patching against target environments.
+**ACRO** is a next-generation "Glass Box" simulation environment built on the **CAMEL-AI** multi-agent framework. It provides a transparent, real-time visualization of autonomous agents (Auditors, Fixers, Strategists) as they perform vulnerability research, reconnaissance, and automated patching against target environments.
+
+> [!TIP]
+> **Audit Highlight**: During simulation runs against the default victim app, **ACRO** successfully identified and reported multiple **unauthenticated routes** that bypassed security middleware.
 
 ---
 
 ## 🚀 The Vision: "Glass Box" Transparency
 
-Most multi-agent systems operate as "Black Boxes"—tokens go in, results come out. **Camel-Reviewer** leverages the **OWL (Open World Learning)** and **SETA (Symbolic Evaluation & Transformation of Agents)** concepts to provide:
+Most multi-agent systems operate as "Black Boxes"—tokens go in, results come out. **ACRO** leverages the **OWL (Open World Learning)** and **SETA (Symbolic Evaluation & Transformation of Agents)** concepts to provide:
 - **Mission Blueprint**: Live visualization of task decomposition and job segregation.
 - **Neural Feed**: Real-time streaming of agent thoughts, tool-use rationale, and inter-agent coordination.
 - **Execution Loop**: Step-by-step breadcrumbs showing the progression from strategy to exploitation to defense.
@@ -29,7 +32,7 @@ Most multi-agent systems operate as "Black Boxes"—tokens go in, results come o
 
 ## 🧱 Tool Implementation Details
 
-**Camel-Reviewer** implements advanced agentic toolkits to empower the Hacker Society:
+**ACRO** implements advanced agentic toolkits to empower the Hacker Society:
 
 ### 1. FileSystem & Shell Toolkit
 - **Mechanism**: Utilizes native **Subprocess** and **Git** bindings to interact with targeted repositories.
@@ -48,7 +51,7 @@ Most multi-agent systems operate as "Black Boxes"—tokens go in, results come o
 .
 ├── Backend/          # FastAPI Engine & Agent Logic
 ├── docs/             # Consolidated Implementation Documentation
-├── frontend/         # React Dashboard (Camel-Reviewer Hub)
+├── frontend/         # React Dashboard (ACRO Hub)
 └── targeted_source_code/ # The "Victim" codebase for simulations
 ```
 
@@ -81,7 +84,7 @@ TARGET_WORKSPACE_PATH=/absolute/path/to/targeted_source_code
 
 ## 🗺️ Roadmap: Scaling to Enterprise Codebases
 
-Today, **Camel-Reviewer** operates in **Direct Analysis Mode**, where agents read "whole files" (e.g., `pyproject.toml`, `app.py`) for vulnerability identification. For massive repositories, we are evolving towards:
+Today, **ACRO** operates in **Direct Analysis Mode**, where agents read "whole files" (e.g., `pyproject.toml`, `app.py`) for vulnerability identification. For massive repositories, we are evolving towards:
 
 ### 1. RAG-based Context Injection (Retrieval-Augmented Generation)
 - **Problem**: Large codebases exceed LLM context windows and result in high token costs.

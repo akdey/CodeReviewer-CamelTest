@@ -16,9 +16,6 @@ frontend/dist/
 .npm
 npm-debug.log*
 
-# Workspace Targets
-targeted_source_code/
-
 # OS / IDE
 .DS_Store
 .vscode/

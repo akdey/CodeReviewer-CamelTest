@@ -1,7 +1,7 @@
 [project]
-name = "camel-reviewer"
+name = "acro"
 version = "0.1.0"
-description = "Camel-Reviewer mission control using CAMEL AI, OWL, and SETA"
+description = "ACRO (Agentic Cyber-Orchestration) mission control using CAMEL AI, OWL, and SETA"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

@@ -1,6 +1,13 @@
-# 🧩 Implementation Walkthrough: Camel-Reviewer: Agentic Code Auditor
+# 🧩 Implementation Walkthrough: ACRO: Agentic Cyber-Orchestration
 
-This document provides a deep dive into the architecture, module design, and integration logic of the **Camel-Reviewer** framework.
+This document provides a deep dive into the architecture, module design, and integration logic of the **ACRO** framework.
+
+---
+
+### 🕵️ Verified Audit Results
+Agents have successfully analyzed the `targeted_source_code` using the **ACRO** framework and identified critical vulnerabilities:
+- **Unauthenticated Routes**: Discovered API endpoints that were accessible without session tokens.
+- **Logic Flaws**: Identified missing validation in the authentication middleware logic.
 
 ---
 
@@ -16,7 +23,7 @@ The project follows a **Multiplexed Agent-to-UI** architecture:
 
 ## 🏗️ Toolkit Implementation Mechanics
 
-**GlassBox** empowers agents with specialized toolsets to perform autonomous audits:
+**ACRO** empowers agents with specialized toolsets to perform autonomous audits:
 
 ### 1. FileSystem & Shell (Subprocess)
 - **Module**: Handled via custom agent-level tool registration.
