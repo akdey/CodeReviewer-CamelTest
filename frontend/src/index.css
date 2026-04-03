@@ -110,16 +110,7 @@ body {
   background: #000;
 }
 
-/* Mission Blueprint Visuals */
-.mission-blueprint-scroll {
-  flex: 1;
-  overflow-x: auto;
-  overflow-y: hidden;
-  display: flex;
-  align-items: center;
-  padding: 20px;
-}
-
+/* Mission Blueprint Visuals (React Flow) */
 .blueprint-empty {
   margin: auto;
   display: flex;
@@ -131,46 +122,46 @@ body {
   font-size: 0.85rem;
 }
 
-.blueprint-tree {
-  display: flex;
-  gap: 40px;
-  padding: 0 40px;
-}
-
-.blueprint-node-container {
-  display: flex;
-  align-items: center;
-  position: relative;
-}
-
-.blueprint-node {
+/* Custom Node Styles */
+.mission-node {
   width: 220px;
   padding: 12px;
-  background: rgba(30, 30, 45, 0.6);
+  background: rgba(30, 30, 45, 0.8);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   display: flex;
   gap: 12px;
   align-items: center;
-  z-index: 2;
   transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
 }
 
-.blueprint-node-container.active .blueprint-node {
-  border-color: var(--accent-cyan);
-  background: rgba(0, 242, 255, 0.05);
-  box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+.mission-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
-.blueprint-node-container.completed .blueprint-node {
-  opacity: 0.7;
-  border-color: var(--accent-green);
+.bg-pending { background: rgba(30, 30, 45, 0.8); }
+.border-pending { border-color: var(--border-color); }
+
+.bg-active { background: rgba(0, 242, 255, 0.05); }
+.border-active { border-color: var(--accent-cyan); }
+.shadow-glow { box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); }
+
+.border-completed { 
+  border-color: var(--accent-green); 
+  opacity: 0.8;
+}
+
+.handle-hidden {
+  opacity: 0;
 }
 
 .node-status {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .node-content {
@@ -193,22 +184,6 @@ body {
   text-overflow: ellipsis;
 }
 
-.blueprint-children {
-  display: flex;
-  align-items: center;
-}
-
-.connector-line {
-  width: 40px;
-  height: 2px;
-  background: var(--border-color);
-}
-
-.children-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
 
 /* Animations */
 .pulse {
