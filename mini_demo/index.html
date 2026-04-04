@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ACRO Mini Demo Dashboard</title>
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #0a0a0c; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); max-width: 600px; text-align: center; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
+        h1 { color: #00f2fe; margin-bottom: 1rem; }
+        p { color: #ccc; line-height: 1.6; }
+        .status { margin-top: 2rem; padding: 1rem; background: rgba(0, 242, 254, 0.1); border-radius: 8px; color: #00f2fe; font-weight: bold; border-left: 4px solid #00f2fe; }
+        .code { font-family: 'Fira Code', monospace; background: #1e1e2e; padding: 1rem; border-radius: 6px; text-align: left; margin-top: 1rem; overflow-x: auto; color: #fab387; }
+        .btn { display: inline-block; margin-top: 2rem; padding: 12px 24px; background: #00f2fe; color: #0a0a0c; text-decoration: none; border-radius: 6px; font-weight: bold; transition: all 0.3s ease; }
+        .btn:hover { background: #4facfe; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4); }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>ACRO Mini Demo</h1>
+    <p>This is a standalone, high-octane demonstration of the ACRO framework focusing purely on the core loops: <strong>Terminal Dependency Management</strong> and <strong>Code Hardening</strong>.</p>
+    
+    <div class="status">
+        MISSION DIRECTIVE: Audit <strong>mini_demo/app.py</strong> and <strong>pyproject.toml</strong> using Groq Llama 3.3.
+    </div>
+
+    <div class="code">
+        ➜ Detect outdated FastAPI 0.90.0<br>
+        ➜ Run 'uv add/pip install' in terminal<br>
+        ➜ Remove hardcoded creds from code
+    </div>
+
+    <p style="font-size: 0.85rem; margin-top: 2rem; opacity: 0.7;">
+        To run this mission, execute the terminal command below:
+        <br><strong>uv run python mini_demo/run_mini_audit.py</strong>
+    </p>
+</div>
+
+</body>
+</html>

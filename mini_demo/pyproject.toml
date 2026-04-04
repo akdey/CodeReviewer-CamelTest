@@ -1,0 +1,12 @@
+[project]
+name = "mini-demo"
+version = "0.1.0"
+description = "ACRO Mini Demo"
+dependencies = [
+    "fastapi==0.90.0",
+    "uvicorn",
+    "requests"
+]
+
+[tool.uv]
+dev-dependencies = ["pytest"]

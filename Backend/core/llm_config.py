@@ -18,7 +18,7 @@ def get_llm_model():
     elif ACTIVE_PROVIDER.lower() == "azure":
         return ModelFactory.create(
             model_platform=ModelPlatformType.AZURE,
-            model_type=ModelType.GPT_4O_MINI, # Assumes a deployment named gpt-4o-mini
+            model_type=ModelType.GPT_4O_MINI,
         )
     else:
         # Default to Groq since it's the fastest for terminal iteration
