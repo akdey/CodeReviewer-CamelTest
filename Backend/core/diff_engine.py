@@ -7,64 +7,77 @@ import logging
 logger = logging.getLogger("hacker-society")
 
 def get_target_path():
-    return getattr(settings, "TARGET_WORKSPACE_PATH", os.path.join(os.getcwd(), "../targeted_source_code"))
+    # Strictly use the environment-provided path
+    return settings.TARGET_WORKSPACE_PATH
 
 def reset_victim_codebase():
     """
-    Clears out all previous Fixer agent patches so the demonstration starts fresh!
+    Clears out previous patches in the target workspace safely.
+    Uses checkout and clean instead of reset --hard to avoid wiping the entire repo.
     """
-    path = os.path.abspath(get_target_path())
-    logger.info(f"Attempting Git reset at absolute path: {path}")
+    path = get_target_path()
+    if not path:
+        logger.error("No TARGET_WORKSPACE_PATH set. Skipping reset.")
+        return
+
+    abs_path = os.path.abspath(path)
+    logger.info(f"Safely resetting target workspace at: {abs_path}")
     
-    if not os.path.exists(path):
-        logger.error(f"Target path does not exist: {path}")
+    if not os.path.exists(abs_path):
+        logger.error(f"Target path does not exist: {abs_path}")
         return
 
     try:
-        # Capture stderr to see specifically why it is failing with 128
-        res1 = subprocess.run(["git", "reset", "--hard"], cwd=path, capture_output=True, text=True)
+        # 1. Revert changes to tracked files in THIS directory only
+        res1 = subprocess.run(["git", "checkout", "HEAD", "--", "."], cwd=abs_path, capture_output=True, text=True)
         if res1.returncode != 0:
-            logger.error(f"Git reset failed (status {res1.returncode}): {res1.stderr.strip()}")
+            logger.error(f"Git checkout failed: {res1.stderr.strip()}")
         
-        res2 = subprocess.run(["git", "clean", "-fd"], cwd=path, capture_output=True, text=True)
+        # 2. Remove untracked files in THIS directory only
+        res2 = subprocess.run(["git", "clean", "-fd", "."], cwd=abs_path, capture_output=True, text=True)
         if res2.returncode == 0:
-            logger.info("Victim codebase reset successfully.")
+            logger.info("Target workspace reset successfully (non-destructive).")
         else:
             logger.error(f"Git clean failed: {res2.stderr.strip()}")
             
     except Exception as e:
-        logger.error(f"Critical error during Git reset: {e}")
+        logger.error(f"Critical error during safety reset: {e}")
 
 def capture_diff_payload():
     """
-    Runs git diff on targeted_source_code and converts it to our JSON Stream array.
+    Runs git diff on the target workspace and converts it to our JSON Stream array.
     """
     path = get_target_path()
+    if not path:
+        return []
+
     try:
-        # We need the filenames that changed within the target folder
         logger.info(f"Running git diff in {path}")
-        # Run git diff from the root, filtering by the targeted source code folder
-        result = subprocess.run(["git", "diff", "--name-only", "--", path], capture_output=True, text=True, check=True)
+        # Run git diff relative to the target path
+        result = subprocess.run(["git", "diff", "--name-only"], cwd=path, capture_output=True, text=True, check=True)
         changed_files = [f for f in result.stdout.strip().split('\n') if f]
         logger.info(f"Files changed: {changed_files}")
         
         diff_array = []
         for file in changed_files:
-            # Get old code from git HEAD (file returns relative to root repo, e.g. targeted_source_code/app.py)
-            old_code_proc = subprocess.run(["git", "show", f"HEAD:{file}"], capture_output=True, text=True)
-            old_code = old_code_proc.stdout
+            file_abs_path = os.path.join(path, file)
+            
+            # Get old code from git HEAD
+            old_code_proc = subprocess.run(["git", "show", f"HEAD:{file}"], cwd=path, capture_output=True, text=True)
+            old_code = old_code_proc.stdout if old_code_proc.returncode == 0 else ""
             
             # Get new code from physical disk
-            # file is already a valid relative path from the root project folder where the server is running
-            with open(file, "r") as f:
-                new_code = f.read()
+            if os.path.exists(file_abs_path):
+                with open(file_abs_path, "r") as f:
+                    new_code = f.read()
+            else:
+                new_code = "[FILE DELETED]"
                 
             diff_array.append({
                 "filename": file,
                 "old_code": old_code,
                 "new_code": new_code
             })
-
             
         logger.info(f"Captured diff for {len(diff_array)} files.")
         return diff_array

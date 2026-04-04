@@ -8,6 +8,33 @@ resolution-markers = [
 ]
 
 [[package]]
+name = "acro"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "camel-ai" },
+    { name = "duckduckgo-search" },
+    { name = "fastapi", extra = ["standard"] },
+    { name = "litellm" },
+    { name = "pydantic" },
+    { name = "python-dotenv" },
+    { name = "uvicorn" },
+    { name = "websockets" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "camel-ai", specifier = ">=0.1.0" },
+    { name = "duckduckgo-search", specifier = ">=6.0.0" },
+    { name = "fastapi", extras = ["standard"], specifier = ">=0.115.0" },
+    { name = "litellm", specifier = ">=1.46.0" },
+    { name = "pydantic", specifier = ">=2.9.2" },
+    { name = "python-dotenv", specifier = ">=1.0.1" },
+    { name = "uvicorn", specifier = ">=0.30.6" },
+    { name = "websockets", specifier = ">=13.0" },
+]
+
+[[package]]
 name = "aiohappyeyeballs"
 version = "2.6.1"
 source = { registry = "https://pypi.org/simple" }
@@ -203,33 +230,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/26/b3/da958646c69b42cfafd3fc081b77bb19bb625773766da6ffa2d77c9c66e0/camel_ai-0.2.90.tar.gz", hash = "sha256:43f11673390cc8d4451d6b1bb2913ddef6131f411f47da02d16a3989c8096d02", size = 1212904, upload-time = "2026-03-22T08:37:04.611Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/eb/e2/7005080797edcc760dcf7695ece29f97e18189ea2c56cd7514592801f0c9/camel_ai-0.2.90-py3-none-any.whl", hash = "sha256:9998c434779a1a847d9ccddce1c069f22fb9667b19ba06a2452c479882169082", size = 1700705, upload-time = "2026-03-22T08:37:02.259Z" },
-]
-
-[[package]]
-name = "camel-ai-backend"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "camel-ai" },
-    { name = "duckduckgo-search" },
-    { name = "fastapi", extra = ["standard"] },
-    { name = "litellm" },
-    { name = "pydantic" },
-    { name = "python-dotenv" },
-    { name = "uvicorn" },
-    { name = "websockets" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "camel-ai", specifier = ">=0.1.0" },
-    { name = "duckduckgo-search", specifier = ">=6.0.0" },
-    { name = "fastapi", extras = ["standard"], specifier = ">=0.115.0" },
-    { name = "litellm", specifier = ">=1.46.0" },
-    { name = "pydantic", specifier = ">=2.9.2" },
-    { name = "python-dotenv", specifier = ">=1.0.1" },
-    { name = "uvicorn", specifier = ">=0.30.6" },
-    { name = "websockets", specifier = ">=13.0" },
 ]
 
 [[package]]

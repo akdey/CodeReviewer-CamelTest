@@ -81,8 +81,9 @@ class HackerSociety:
         logger.info("Mission started.")
 
         global_task = (
-            "Find vulnerabilities, open secrets, and poor code practices "
-            "in targeted_source_code and patch them appropriately. Guarantee validation via pytest."
+            "Scan the entire target workspace to find vulnerabilities, open secrets, "
+            "and poor code practices. Patch them appropriately and verify all fixes "
+            "via pytest within the same environment."
         )
 
         # Fire off the CAMEL Workforce Loop natively

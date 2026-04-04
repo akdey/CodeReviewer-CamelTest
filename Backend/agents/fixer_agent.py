@@ -2,8 +2,6 @@ import asyncio
 import os
 from camel.agents import ChatAgent
 from camel.messages import BaseMessage
-
-# Import REAL tools from CAMEL-AI natively
 from camel.toolkits import TerminalToolkit, FileToolkit 
 
 from core.settings import settings
@@ -16,14 +14,16 @@ class FixerAgent:
     def __init__(self):
         self.model = get_llm_model()
         
-        # Use target workspace defined or default fallback directly adjacent
-        target_path = getattr(settings, "TARGET_WORKSPACE_PATH", os.path.join(os.getcwd(), "../targeted_source_code"))
+        # Strictly use target workspace from environment settings
+        target_path = settings.TARGET_WORKSPACE_PATH
+        if not target_path:
+            raise ValueError("TARGET_WORKSPACE_PATH must be set in the environment/.env file.")
         
-        # REAL tools binding!
+        # Initialize native toolkits with exact environment path
         self.terminal_toolkit = TerminalToolkit(working_directory=target_path)
         self.file_toolkit = FileToolkit(working_directory=target_path)
         
-        # Apply the exclusion filter and output truncation to file tools
+        # Combine and wrap file tools with exclusion/truncation logic
         tools = [
             *self.terminal_toolkit.get_tools(),
             *wrap_toolkit_with_exclusion(self.file_toolkit.get_tools())
@@ -46,7 +46,7 @@ class FixerAgent:
             "message": f"Starting patch operations for directive: {task_instruction}"
         })
 
-        # We step the agent. It has the physical tools to run pip/uv, and rewrite app.py
+        # Step the agent forward to execute the patching directive
         response = self.agent.step(user_msg)
         
         await ws_manager.broadcast_json("thought_stream", {

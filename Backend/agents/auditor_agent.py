@@ -10,19 +10,23 @@ class AuditorAgent:
     def __init__(self):
         self.model = get_llm_model()
         
-        target_path = getattr(settings, "TARGET_WORKSPACE_PATH", os.path.join(os.getcwd(), "../targeted_source_code"))
+        # Strictly use target workspace from environment settings
+        target_path = settings.TARGET_WORKSPACE_PATH
+        if not target_path:
+            raise ValueError("TARGET_WORKSPACE_PATH must be set in the environment/.env file.")
 
-        # Tools specifically for auditing: Search the web (Serper only)
+        # Search Tools (Serper only)
         all_search_tools = SearchToolkit().get_tools()
         self.search_tools = []
         for t in all_search_tools:
             name = t.openai_tool_schema["function"]["name"]
-            # Switch from duckduckgo to serper as requested
             if "serper" in name.lower():
                 self.search_tools.append(t)
         
+        # Initialize FileToolkit with the exact environment path
+        raw_file_tools = FileToolkit(working_directory=target_path).get_tools()
         # Apply the exclusion filter and output truncation to file tools
-        self.file_tools = wrap_toolkit_with_exclusion(FileToolkit(working_directory=target_path).get_tools())
+        self.file_tools = wrap_toolkit_with_exclusion(raw_file_tools)
 
         self.agent = ChatAgent(
             system_message=AUDITOR_SYS_MSG,

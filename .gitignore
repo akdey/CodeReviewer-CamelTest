@@ -26,3 +26,5 @@ npm-debug.log*
 # Logs
 *.log
 Backend/app.log
+terminal_logs/
+context_files
