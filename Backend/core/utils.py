@@ -14,11 +14,12 @@ IGNORED_PATTERNS = [
     ".idea"
 ]
 
+MAX_OUTPUT_LINES = 1000  # Safety limit to prevent context window overflow
+
 def wrap_toolkit_with_exclusion(tools: List[FunctionTool], ignored_patterns: List[str] = IGNORED_PATTERNS) -> List[FunctionTool]:
     """
     Wraps a list of CAMEL FunctionTools with a preemptive check for ignored path patterns.
-    If a tool argument (path, pattern, or file_path) matches an ignored pattern,
-    the tool returns a restricted access message instead of executing.
+    Also implements output truncation for file reading operations to save tokens.
     """
     filtered_tools = []
     
@@ -27,8 +28,7 @@ def wrap_toolkit_with_exclusion(tools: List[FunctionTool], ignored_patterns: Lis
         
         @functools.wraps(original_func)
         def wrapped_func(*args, **kwargs) -> Any:
-            # Check all string/path arguments for ignored patterns
-            # We look for common argument names used in FileToolkit
+            # 1. Path/Exclusion Check
             search_keys = ["path", "file_path", "pattern", "filepath", "dir_path"]
             
             for key in search_keys:
@@ -37,13 +37,24 @@ def wrap_toolkit_with_exclusion(tools: List[FunctionTool], ignored_patterns: Lis
                     if any(p in val for p in ignored_patterns):
                         return f"Error: Access to '{val}' is restricted to preserve context window. Please focus on source code."
             
-            # Also check positional args if any (though CAMEL usually uses kwargs)
+            # Position check
             for arg in args:
                 if isinstance(arg, str):
                     if any(p in arg for p in ignored_patterns):
                         return f"Error: Access to '{arg}' is restricted to preserve context window. Please focus on source code."
             
-            return original_func(*args, **kwargs)
+            # 2. Execute original Tool
+            result = original_func(*args, **kwargs)
+            
+            # 3. Truncation/Context Optimization for large outputs
+            # Only truncate string results (likely from read_file or search_files)
+            if isinstance(result, str) and len(result.splitlines()) > MAX_OUTPUT_LINES:
+                lines = result.splitlines()
+                truncated_result = "\n".join(lines[:MAX_OUTPUT_LINES])
+                footer = f"\n\n... [TRUNCATED {len(lines) - MAX_OUTPUT_LINES} LINES TO PRESERVE CONTEXT WINDOW] ..."
+                return truncated_result + footer
+                
+            return result
         
         # Replace the function in the FunctionTool object
         tool.func = wrapped_func
