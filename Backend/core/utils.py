@@ -2,6 +2,8 @@ import functools
 from typing import List, Any
 import logging
 from camel.toolkits import FunctionTool
+from core.websocket_manager import ws_manager
+import asyncio
 
 logger = logging.getLogger("hacker-society")
 
@@ -15,7 +17,8 @@ IGNORED_PATTERNS = [
     "node_modules",
     ".pytest_cache",
     ".vscode",
-    ".idea"
+    ".idea",
+    ".bak"
 ]
 
 MAX_OUTPUT_LINES = 1000  # Safety limit to prevent context window overflow
@@ -47,6 +50,19 @@ def _wrap_tool_function(tool: FunctionTool, ignored_patterns: List[str], max_out
         # 2. Execute original Tool
         result = original_func(*args, **kwargs)
         
+        # 4. Streaming: Monitor for terminal/shell tools and broadcast raw output
+        tool_name = getattr(tool, "tool_name", "").lower()
+        is_terminal = any(term in tool_name for term in ["terminal", "shell", "exec", "run"])
+        
+        if is_terminal and ws_manager:
+            try:
+                # Clean the result for streaming (truncate if massive)
+                display_result = str(result)[:2000] 
+                # Use a fire-and-forget task to avoid blocking the main agent loop
+                asyncio.create_task(ws_manager.broadcast_json("terminal_stream", {"output": display_result}))
+            except Exception as stream_err:
+                logger.error(f"Streaming error for {tool_name}: {stream_err}")
+
         # 3. Truncation/Context Optimization for large outputs
         if isinstance(result, str) and len(result.splitlines()) > max_output_lines:
             lines = result.splitlines()

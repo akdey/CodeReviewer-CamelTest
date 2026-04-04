@@ -82,8 +82,10 @@ class HackerSociety:
 
         global_task = (
             "Scan the entire target workspace to find vulnerabilities, open secrets, "
-            "and poor code practices. Patch them appropriately and verify all fixes "
-            "via pytest within the same environment."
+            "and poor code practices. For any fixes, you MUST create a virtual environment "
+            "using 'uv venv', install dependencies using 'uv sync', and verify the patch with 'uv run pytest' "
+            "within that SINGLE '.venv' directory. You are FORBIDDEN from using '.initial_env' - "
+            "use only '.venv'. Ensure the server starts successfully using 'uv run uvicorn'."
         )
 
         # Fire off the CAMEL Workforce Loop natively
