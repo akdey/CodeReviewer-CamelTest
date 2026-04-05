@@ -46,7 +46,7 @@ async def lifespan(app: FastAPI):
     # Cleanup logic (if any) goes here after yield
 
 app = FastAPI(
-    title="Hacker Society API", 
+    title="Autonomous Security Workforce API", 
     description="Mission Control for CAMEL Agents",
     lifespan=lifespan
 )
@@ -69,7 +69,7 @@ app.add_middleware(
 
 @app.get("/")
 def health_check():
-    return {"status": "Hacker Society Operations Active"}
+    return {"status": "Autonomous Security Workforce Operations Active"}
 
 app.include_router(api_router, prefix="/api")
 

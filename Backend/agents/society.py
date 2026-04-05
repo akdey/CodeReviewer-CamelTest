@@ -15,7 +15,7 @@ from agents.persona_setup import STRATEGIST_SYS_MSG
 from core.tracking import track_agent
 from core.workforce_tracking import SocketWorkforceCallback
 
-class HackerSociety:
+class SecurityWorkforce:
     def __init__(self, loop: asyncio.AbstractEventLoop):
         self.model = get_llm_model()
         self.loop = loop
@@ -38,7 +38,7 @@ class HackerSociety:
         # 3. Create the CAMEL Workforce with explicit coordinator/task agents
         # and our custom real-time socket tracking callback.
         self.workforce = Workforce(
-            "Hacker Society Workforce",
+            "Autonomous Security Workforce",
             coordinator_agent=self.strategist,
             task_agent=self.strategist, # Using strategist for both decomposition and task routing
             callbacks=[SocketWorkforceCallback(loop=self.loop)]
@@ -94,7 +94,7 @@ class HackerSociety:
         logger.info(f"Workforce mission final result: {result}")
 
         self.broadcast_sync("communications_stream", {
-            "speaker": "Hacker Society", 
+            "speaker": "Security Workforce", 
             "text": f"MISSION COMPLETE. SUMMARY:\n{result}"
         })
         

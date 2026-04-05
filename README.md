@@ -32,7 +32,7 @@ Most multi-agent systems operate as "Black Boxes"—tokens go in, results come o
 
 ## 🧱 Tool Implementation Details
 
-**ACRO** implements advanced agentic toolkits to empower the Hacker Society:
+**ACRO** implements advanced agentic toolkits to empower the Autonomous Security Workforce:
 
 ### 1. FileSystem & Shell Toolkit
 - **Mechanism**: Utilizes native **Subprocess** and **Git** bindings to interact with targeted repositories.

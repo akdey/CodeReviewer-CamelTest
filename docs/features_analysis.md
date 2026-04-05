@@ -1,6 +1,6 @@
 # CAMEL AI Ecosystem Features vs Current Implementation
 
-Based on a deep dive into the official CAMEL-AI, OWL, and SETA documentation, here is a breakdown of all available features across the ecosystem and precisely which ones we have harnessed inside your `HackerSociety` backend!
+Based on a deep dive into the official CAMEL-AI, OWL, and SETA documentation, here is a breakdown of all available features across the ecosystem and precisely which ones we have harnessed inside your `SecurityWorkforce` backend!
 
 ---
 
