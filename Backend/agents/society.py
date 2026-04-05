@@ -81,11 +81,10 @@ class HackerSociety:
         logger.info("Mission started.")
 
         global_task = (
-            "Scan the entire target workspace to find vulnerabilities, open secrets, "
-            "and poor code practices. For any fixes, you MUST create a virtual environment "
-            "using 'uv venv', install dependencies using 'uv sync', and verify the patch with 'uv run pytest' "
-            "within that SINGLE '.venv' directory. You are FORBIDDEN from using '.initial_env' - "
-            "use only '.venv'. Ensure the server starts successfully using 'uv run uvicorn'."
+            "Perform a comprehensive security audit and patching mission on the target workspace.\n\n"
+            "1. **Audit**: Scan for vulnerable package versions (`pyproject.toml`, `uv.lock`) and use terminal tools (grep) followed by FileToolkit (read_file) to confirm ANY hardcoded secrets in the source code.\n"
+            "2. **Patch**: You MUST apply physical code edits to fix all identified vulnerabilities and secrets. Updating a log is not enough; you must change the files.\n"
+            "3. **Verification**: You MUST create a `.venv` with `uv venv`, sync dependencies, and verify all fixes with `uv run pytest`. Finally, you MUST generate a `test-report.md` in the target workspace detailing the physical changes made and providing the final test outputs."
         )
 
         # Fire off the CAMEL Workforce Loop natively

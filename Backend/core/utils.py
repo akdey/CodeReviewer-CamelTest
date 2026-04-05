@@ -50,16 +50,27 @@ def _wrap_tool_function(tool: FunctionTool, ignored_patterns: List[str], max_out
         # 2. Execute original Tool
         result = original_func(*args, **kwargs)
         
-        # 4. Streaming: Monitor for terminal/shell tools and broadcast raw output
+        # 4. Streaming: Monitor for terminal/shell tools and broadcast raw command and output
         tool_name = getattr(tool, "tool_name", "").lower()
-        is_terminal = any(term in tool_name for term in ["terminal", "shell", "exec", "run"])
+        func_name = getattr(tool.func, "__name__", "").lower()
+        is_terminal = any(term in tool_name or term in func_name for term in ["terminal", "shell", "exec", "run", "command"])
         
         if is_terminal and ws_manager:
             try:
+                # Extract the command string if possible
+                command = kwargs.get("command") or (args[0] if args and isinstance(args[0], str) else "unknown command")
+                
                 # Clean the result for streaming (truncate if massive)
                 display_result = str(result)[:2000] 
+                
+                # Log command for backend audit
+                logger.info(f"Broadcasting terminal command: {command}")
+                
                 # Use a fire-and-forget task to avoid blocking the main agent loop
-                asyncio.create_task(ws_manager.broadcast_json("terminal_stream", {"output": display_result}))
+                asyncio.create_task(ws_manager.broadcast_json("terminal_stream", {
+                    "command": command,
+                    "output": display_result
+                }))
             except Exception as stream_err:
                 logger.error(f"Streaming error for {tool_name}: {stream_err}")
 
