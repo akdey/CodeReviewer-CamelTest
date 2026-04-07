@@ -1,57 +1,60 @@
 import asyncio
-import os
+import logging
 from camel.agents import ChatAgent
-from camel.messages import BaseMessage
-from camel.toolkits import TerminalToolkit, FileToolkit 
-
-from core.settings import settings
+from camel.toolkits import FileToolkit, SearchToolkit
 from core.llm_config import get_llm_model
-from core.websocket_manager import ws_manager
 from core.utils import wrap_toolkit_with_exclusion
+from core.settings import settings
+from core.interpreter_tool import InterpreterToolkit
 from agents.persona_setup import FIXER_SYS_MSG
 
+logger = logging.getLogger("hacker-society")
+
 class FixerAgent:
-    def __init__(self):
+    """
+    Agentic fixer tasked with remediating vulnerabilities.
+    Restored with high-fidelity observability and strict search filtering.
+    """
+    def __init__(self, loop: asyncio.AbstractEventLoop = None):
         self.model = get_llm_model()
+        self.loop = loop or asyncio.get_event_loop()
         
-        # Strictly use target workspace from environment settings
+        # 1. Strictly use target workspace from environment settings
         target_path = settings.TARGET_WORKSPACE_PATH
-        if not target_path:
-            raise ValueError("TARGET_WORKSPACE_PATH must be set in the environment/.env file.")
         
-        # Initialize native toolkits with exact environment path
-        self.terminal_toolkit = TerminalToolkit(working_directory=target_path)
+        # 2. Search Tools (Serper only)
+        # Bypasses problematic serpapi schemas by filtering for 'serper'
+        all_search_tools = SearchToolkit().get_tools()
+        self.search_tools = []
+        for t in all_search_tools:
+            # Verified: uses 'openai_tool_schema' in this environment
+            if hasattr(t, 'openai_tool_schema'):
+                name = t.openai_tool_schema["function"]["name"]
+                if "serper" in name.lower():
+                    self.search_tools.append(t)
+        
+        # 3. High-Fidelity Interpreter (Custom Wrapper for remediation)
+        self.interpreter_toolkit = InterpreterToolkit(
+            workspace_path=target_path, 
+            loop=self.loop
+        )
+        
+        # 4. Standard File Operations (applying physical patches)
         self.file_toolkit = FileToolkit(working_directory=target_path)
         
-        # Combine and wrap file tools with exclusion/truncation logic
-        tools = [
-            *self.terminal_toolkit.get_tools(),
-            *wrap_toolkit_with_exclusion(self.file_toolkit.get_tools())
-        ]
-        
+        # 5. Combined Workforce Tools
+        # 'wrap_toolkit_with_exclusion' applies path safety, observability, and schema fixes
+        self.tools = wrap_toolkit_with_exclusion([
+            *self.file_toolkit.get_tools(),
+            *self.interpreter_toolkit.get_tools(),
+            *self.search_tools
+        ])
+
+        # 6. Build the underlying agent (FIXER)
         self.agent = ChatAgent(
             system_message=FIXER_SYS_MSG,
             model=self.model,
-            tools=tools,
+            tools=self.tools
         )
-
-    async def execute_patch_loop(self, task_instruction: str):
-        """
-        Executes a patching loop with validation.
-        """
-        user_msg = BaseMessage.make_user_message(role_name="User", content=task_instruction)
         
-        await ws_manager.broadcast_json("thought_stream", {
-            "agent": "SETA Fixer",
-            "message": f"Starting patch operations for directive: {task_instruction}"
-        })
-
-        # Step the agent forward to execute the patching directive
-        response = self.agent.step(user_msg)
-        
-        await ws_manager.broadcast_json("thought_stream", {
-            "agent": "SETA Fixer",
-            "message": response.msg.content
-        })
-
-        return response.msg.content
+        logger.info(f"Fixer Agent realigned with 'openai_tool_schema' fix for {target_path}")

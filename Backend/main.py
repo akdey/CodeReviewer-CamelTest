@@ -1,13 +1,15 @@
 import logging
 import os
+import asyncio
+import time
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+
 from core.websocket_manager import ws_manager
 from features.api import router as api_router
-import time
-import asyncio
 
-# Ensure logs directory exists with absolute path
+# Ensure logs directory exists
 LOG_DIR = os.path.join(os.getcwd(), "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
 LOG_FILE = os.path.join(LOG_DIR, "app.log")
@@ -16,38 +18,35 @@ LOG_FILE = os.path.join(LOG_DIR, "app.log")
 logger = logging.getLogger("hacker-society")
 logger.setLevel(logging.INFO)
 
-# Create file handler
 fh = logging.FileHandler(LOG_FILE)
 fh.setLevel(logging.INFO)
-
-# Create console handler
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
 
-# Create formatter
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
 
-# Add handlers
 logger.addHandler(fh)
 logger.addHandler(ch)
-
-from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    Kicks off the background heartbeat loop for WebSockets during startup.
+    Kicks off core mission-critical background services on startup.
+    Anchors the WebSocket manager to the master event loop for cross-thread emission.
     """
-    logger.info("Starting WebSocket heartbeat background task...")
+    loop = asyncio.get_running_loop()
+    ws_manager.set_loop(loop)
+    
+    logger.info("Initializing WebSocket heartbeat background task...")
     asyncio.create_task(ws_manager.start_heartbeat())
     yield
-    # Cleanup logic (if any) goes here after yield
+    # Cleanup logic (if any) goes here
 
 app = FastAPI(
     title="Autonomous Security Workforce API", 
-    description="Mission Control for CAMEL Agents",
+    description="Mission Control for CAMEL-powered Security Orchestration",
     lifespan=lifespan
 )
 
@@ -76,18 +75,20 @@ app.include_router(api_router, prefix="/api")
 @app.websocket("/ws/events")
 async def websocket_events(websocket: WebSocket):
     """
-    The singular, multiplexed WebSocket connecting the React Frontend 
-    to the autonomous operations.
+    Multiplexed dashboard stream for neural feeds and terminal traces.
     """
-    origin = websocket.headers.get("origin")
-    logger.info(f"Incoming WebSocket connection attempt from origin: {origin}")
-    
-    await ws_manager.connect(websocket)
-    await ws_manager.broadcast_json("system", {"message": "Glass Box WebSocket connected!"})
-    
     try:
+        # 1. Establish and accept connection
+        await ws_manager.connect(websocket)
+        await ws_manager.broadcast_json("system", {"message": "Neural stream established!"})
+        
+        # 2. Keep connection alive
         while True:
-            # Keep connection alive, though we only push unidirectionally downstream
+            # Maintain active connection
             await websocket.receive_text()
+            
     except WebSocketDisconnect:
+        ws_manager.disconnect(websocket)
+    except Exception as e:
+        logger.error(f"WebSocket execution error: {str(e)}")
         ws_manager.disconnect(websocket)
