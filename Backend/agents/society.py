@@ -28,11 +28,40 @@ class SecurityWorkforce:
         self.auditor_wrapper = AuditorAgent(loop=self.loop)
         self.fixer_wrapper = FixerAgent(loop=self.loop)
         
-        # 2. Define the Strategist directly as an ObservedChatAgent
+        # 2. Enrich the OWL Strategist with Advanced Capabilities
+        # We give the coordinator direct access to the web and code environments.
+        from core.settings import settings
+        from core.utils import wrap_toolkit_with_exclusion
+        from core.interpreter_tool import InterpreterToolkit
+        from camel.toolkits import BrowserToolkit, SearchToolkit
+        
+        # Initialize Interpreter for local inspection
+        self.strategist_interpreter = InterpreterToolkit(
+            workspace_path=settings.TARGET_WORKSPACE_PATH,
+            loop=self.loop
+        )
+        
+        # Initialize Browser for web reconnaissance
+        self.strategist_browser = BrowserToolkit(headless=True)
+        
+        # Initialize Search (Multi-channel)
+        self.strategist_search = SearchToolkit()
+        
+        # Combine Strategist Tools
+        all_strat_tools = [
+            *self.strategist_interpreter.get_tools(),
+            *self.strategist_browser.get_tools(),
+            self.strategist_search.search_duckduckgo,
+            self.strategist_search.search_wiki
+        ]
+        
+        self.strategist_tools = wrap_toolkit_with_exclusion(all_strat_tools)
+        
+        # 3. Define the Strategist directly as an ObservedChatAgent
         self.strategist = ObservedChatAgent(
             system_message=STRATEGIST_SYS_MSG,
             model=self.model,
-            tools=[],
+            tools=self.strategist_tools,
             agent_name="OWL Strategist",
             loop=self.loop
         )

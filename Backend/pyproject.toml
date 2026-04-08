@@ -17,6 +17,7 @@ dependencies = [
     "GitPython>=3.1.43",
     "aiofiles>=24.1.0",
     "python-multipart>=0.0.12",
+    "playwright>=1.46.0",
 ]
 
 [build-system]
