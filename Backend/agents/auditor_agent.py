@@ -13,6 +13,7 @@ from camel.toolkits import (
 )
 from core.llm_config import get_llm_model
 from core.utils import wrap_toolkit_with_exclusion
+from core.custom_tools import semantic_code_search
 from core.settings import settings
 from agents.persona_setup import AUDITOR_SYS_MSG
 
@@ -54,7 +55,8 @@ class AuditorAgent:
             *self.browser_toolkit.get_tools(),
             *self.code_exec_toolkit.get_tools(),
             *self.skill_toolkit.get_tools(),
-            *self.search_tools
+            *self.search_tools,
+            semantic_code_search
         ])
 
         # 4. Build the underlying agent

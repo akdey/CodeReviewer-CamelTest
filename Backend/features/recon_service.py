@@ -5,6 +5,7 @@ from typing import List, Dict
 from agents.architect_agent import StructuralArchitectAgent
 from camel.datagen.source2synth.data_processor import UserDataProcessor
 from camel.datagen.source2synth.user_data_processor_config import ProcessorConfig
+from features.indexed_retriever import IndexedRetriever
 from core.settings import settings
 from core.websocket_manager import ws_manager
 
@@ -17,6 +18,7 @@ class CodeReconService:
     def __init__(self, loop: asyncio.AbstractEventLoop):
         self.loop = loop
         self.architect = StructuralArchitectAgent(loop=self.loop)
+        self.retriever = IndexedRetriever()
         
         # Initialize Source2Synth processor
         config = ProcessorConfig()
@@ -24,40 +26,73 @@ class CodeReconService:
 
     async def run_recon(self):
         """
-        Runs the documentation mission: Scan -> Synthesize -> Persist.
+        Runs the documentation mission: Scan -> Map -> Synthesize.
         """
         target_path = settings.TARGET_WORKSPACE_PATH
         doc_path = os.path.join(target_path, "report")
         os.makedirs(doc_path, exist_ok=True)
         
-        await ws_manager.broadcast_json("system", {"message": "Structural Architect: Commencing Codebase Reconnaissance..."})
+        await ws_manager.broadcast_json("system", {
+            "message": "Sentinel-Elite Recon: Mapping codebase hierarchy...",
+            "type": "intelligence_update"
+        })
         
-        # 1. Structural Scan Instruction
-        prompt = (
+        # 1. Structural Mapping & Hotspot Detection
+        hotspots = self._map_hotspots(target_path)
+        
+        # 2. Semantic Indexing (RAG)
+        await ws_manager.broadcast_json("system", {
+            "message": "Sentinel-Elite Recon: Building semantic index (Vector RAG)...",
+            "type": "intelligence_update"
+        })
+        self.retriever.index_codebase(target_path)
+        
+        # 3. Structural & Architectural Analysis
+        hotspot_str = "\n".join([f"- {h}" for h in hotspots[:10]])
+        arch_prompt = (
             f"Analyze the codebase at {target_path}.\n"
-            "1. List all main directories and their obvious purpose.\n"
-            "2. Identify the entry point of the application.\n"
-            "3. Create a high-level summary of the architectural flow.\n"
-            f"Write your findings as 'architecture.md' in the 'report/' folder."
+            f"IDENTIFIED HOTSPOTS:\n{hotspot_str}\n\n"
+            "MISSION:\n"
+            "1. Generate 'report/architecture.md'. Include a Mermaid.js diagram showing the core system components.\n"
+            "2. Generate 'report/api-spec.md'. Scan for all API endpoints, request/response models, and authentication requirements.\n"
+            "3. Generate 'report/data-flow.md'. Use 'semantic_code_search' to trace how data moves from user input to storage/output."
         )
         
-        # Execute via the architect agent
-        # We manually step the agent to ensure deep analysis
-        response = self.architect.agent.step(prompt)
+        self.architect.agent.step(arch_prompt)
         
-        # 2. Functional Synthesis (Deep Dive)
-        # We'll have the agent list files, then we pick a few interesting ones to synth
-        # (Simplified for now: requesting a module mapping)
-        module_prompt = (
-            "Create a module-wise analysis of the system.\n"
-            "Focus on how data moves through the application.\n"
-            f"Write this to 'module-analysis.md' in the 'report/' folder."
+        # 4. Deep Security Mapping (Synthesize)
+        security_prompt = (
+            "Scan the identified hotspots and create a 'Security Perimeter' document in 'report/security-layout.md'.\n"
+            "Highlight where validation, auth, and sensitive IO occur.\n"
+            "Ensure all file paths are absolute and clickable."
         )
-        self.architect.agent.step(module_prompt)
+        self.architect.agent.step(security_prompt)
         
-        await ws_manager.broadcast_json("system", {"message": "Intelligence Synthesized: documentation stored in 'report/' folder."})
+        await ws_manager.broadcast_json("system", {
+            "message": "Scientific Intelligence Harvested: Comprehensive document tree available in 'report/'.",
+            "type": "intelligence_complete"
+        })
         
-    def get_context_for_audit(v) -> str:
+    def _map_hotspots(self, root_path: str) -> List[str]:
+        """
+        Recursively scans the directory structure to identify security hotspots.
+        """
+        hotspots = []
+        security_keywords = {"auth", "crypto", "secret", "key", "token", "password", "identity", "admin", "db"}
+        
+        for root, dirs, files in os.walk(root_path):
+            # Ignore hidden dirs and usual suspects
+            dirs[:] = [d for d in dirs if not d.startswith('.') and d not in {'node_modules', '__pycache__', 'venv', '.venv'}]
+            
+            for name in files + dirs:
+                if any(kw in name.lower() for kw in security_keywords):
+                    rel_path = os.path.relpath(os.path.join(root, name), root_path)
+                    hotspots.append(rel_path)
+                    
+        return sorted(list(set(hotspots)))
+
+    @staticmethod
+    def get_context_for_audit() -> str:
         """
         Reads the generated docs to provide context to other agents.
         """

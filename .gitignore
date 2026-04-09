@@ -33,3 +33,4 @@ context_files
 .sentinel_repro/
 report/
 skills/
+Backend/chroma_db/

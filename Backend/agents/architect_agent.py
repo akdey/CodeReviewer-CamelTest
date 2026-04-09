@@ -4,6 +4,7 @@ from camel.agents import ChatAgent
 from camel.toolkits import FileToolkit
 from core.llm_config import get_llm_model
 from core.utils import wrap_toolkit_with_exclusion
+from core.custom_tools import semantic_code_search
 from core.settings import settings
 from agents.persona_setup import ARCHITECT_SYS_MSG
 
@@ -26,7 +27,8 @@ class StructuralArchitectAgent:
         # 2. Combined Tools
         # wrap_toolkit_with_exclusion handles safety and telemetry
         self.tools = wrap_toolkit_with_exclusion([
-            *self.file_toolkit.get_tools()
+            *self.file_toolkit.get_tools(),
+            semantic_code_search
         ])
 
         # 3. Build the underlying agent
