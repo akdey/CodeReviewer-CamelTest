@@ -4,6 +4,7 @@ from camel.agents import ChatAgent
 from camel.toolkits import FileToolkit
 from core.llm_config import get_llm_model
 from core.utils import wrap_toolkit_with_exclusion
+from core.observed_agent import ObservedChatAgent
 from core.custom_tools import semantic_code_search
 from core.settings import settings
 from agents.persona_setup import ARCHITECT_SYS_MSG
@@ -32,10 +33,12 @@ class StructuralArchitectAgent:
         ])
 
         # 3. Build the underlying agent
-        self.agent = ChatAgent(
+        self.agent = ObservedChatAgent(
             system_message=ARCHITECT_SYS_MSG,
             model=self.model,
-            tools=self.tools
+            tools=self.tools,
+            agent_name="Structural Architect",
+            loop=self.loop
         )
         
         logger.info(f"Structural Architect Agent initialized for {target_path}")

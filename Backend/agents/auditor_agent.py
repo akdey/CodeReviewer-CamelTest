@@ -13,6 +13,7 @@ from camel.toolkits import (
 )
 from core.llm_config import get_llm_model
 from core.utils import wrap_toolkit_with_exclusion
+from core.observed_agent import ObservedChatAgent
 from core.custom_tools import semantic_code_search
 from core.settings import settings
 from agents.persona_setup import AUDITOR_SYS_MSG
@@ -60,10 +61,12 @@ class AuditorAgent:
         ])
 
         # 4. Build the underlying agent
-        self.agent = ChatAgent(
+        self.agent = ObservedChatAgent(
             system_message=AUDITOR_SYS_MSG,
             model=self.model,
             tools=self.tools,
+            agent_name="Security Auditor",
+            loop=self.loop,
             token_limit=200000,
             summarize_threshold=80,
             prune_tool_calls_from_memory=True

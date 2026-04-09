@@ -2,6 +2,7 @@
 Backend/.venv/
 Backend/__pycache__/
 Backend/logs/
+Backend/chroma_db
 *.pyc
 *.pyo
 *.pyd
@@ -33,4 +34,5 @@ context_files
 .sentinel_repro/
 report/
 skills/
-Backend/chroma_db/
+**/chroma_db/
+chroma.sqlite3

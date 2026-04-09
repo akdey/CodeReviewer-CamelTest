@@ -11,6 +11,7 @@ from camel.toolkits import (
 )
 from core.llm_config import get_llm_model
 from core.utils import wrap_toolkit_with_exclusion
+from core.observed_agent import ObservedChatAgent
 from core.settings import settings
 from agents.persona_setup import FIXER_SYS_MSG
 
@@ -54,10 +55,12 @@ class FixerAgent:
         ])
 
         # 5. Build the underlying agent
-        self.agent = ChatAgent(
+        self.agent = ObservedChatAgent(
             system_message=FIXER_SYS_MSG,
             model=self.model,
             tools=self.tools,
+            agent_name="SETA Fixer",
+            loop=self.loop,
             token_limit=200000,
             summarize_threshold=80,
             prune_tool_calls_from_memory=True

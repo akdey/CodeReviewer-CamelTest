@@ -129,11 +129,19 @@ def _create_safe_tool_wrapper(original_func):
         is_shell = any(term in func_name for term in ["terminal", "shell", "exec", "run_command", "run_shell"])
         is_browser = any(term in func_name for term in ["browser", "playwright", "click", "navigate", "page"])
         is_code = any(term in func_name for term in ["execute_code", "run_code", "interpret"])
+        is_file = any(term in func_name for term in ["read", "write", "edit", "append", "replace", "delete"])
 
         if is_shell:
-            command = kwargs.get("command") or (args[0] if args else "unknown")
+            # TerminalToolkit signature: (id, command, block, timeout)
+            # If positional arguments are used, command is args[1] if args[0] is id.
+            command = kwargs.get("command")
+            if not command and len(args) > 1:
+                command = args[1]
+            elif not command and args:
+                command = args[0]
+            
             ws_manager.emit("terminal_stream", {
-                "command": str(command),
+                "command": str(command or "unknown"),
                 "output": result_str[:15000] 
             })
         elif is_browser:
@@ -145,6 +153,13 @@ def _create_safe_tool_wrapper(original_func):
             ws_manager.emit("terminal_stream", {
                 "command": "Running Reproduced Code Block...",
                 "output": result_str[:15000]
+            })
+        elif is_file:
+            target_file = kwargs.get("path") or kwargs.get("file_path") or (args[0] if args else "unknown")
+            action = "Reading" if "read" in func_name else "Writing/Modifying"
+            ws_manager.emit("communications_stream", {
+                "speaker": "System",
+                "text": f"File Operation ({action}): {target_file}"
             })
             
         return result_str
