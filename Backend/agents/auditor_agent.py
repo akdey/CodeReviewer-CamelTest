@@ -1,11 +1,19 @@
+import os
 import asyncio
 import logging
 from camel.agents import ChatAgent
-from camel.toolkits import FileToolkit, SearchToolkit, ExcelToolkit
+from camel.toolkits import (
+    FileToolkit, 
+    SearchToolkit, 
+    ExcelToolkit, 
+    BrowserToolkit, 
+    CodeExecutionToolkit,
+    SkillToolkit,
+    TerminalToolkit
+)
 from core.llm_config import get_llm_model
 from core.utils import wrap_toolkit_with_exclusion
 from core.settings import settings
-from core.interpreter_tool import InterpreterToolkit
 from agents.persona_setup import AUDITOR_SYS_MSG
 
 logger = logging.getLogger("hacker-society")
@@ -13,16 +21,15 @@ logger = logging.getLogger("hacker-society")
 class AuditorAgent:
     """
     Agentic auditor tasked with scanning code for vulnerabilities.
-    Enriched with Excel capabilities for structured data analysis.
+    Enriched with Sentinel-Elite capabilities: Visible Browser, Code Execution, and Skill Bank.
     """
     def __init__(self, loop: asyncio.AbstractEventLoop = None):
         self.model = get_llm_model()
         self.loop = loop or asyncio.get_event_loop()
         
-        # 1. Strictly use target workspace from environment settings
         target_path = settings.TARGET_WORKSPACE_PATH
         
-        # 2. Search Tools (Serper only for high-fidelity)
+        # 1. Search Tools (Serper only for high-fidelity)
         all_search_tools = SearchToolkit().get_tools()
         self.search_tools = []
         for t in all_search_tools:
@@ -31,32 +38,33 @@ class AuditorAgent:
                 if "serper" in name.lower():
                     self.search_tools.append(t)
         
-        # 3. High-Fidelity Interpreter (Custom Wrapper for mission telemetry)
-        self.interpreter_toolkit = InterpreterToolkit(
-            workspace_path=target_path, 
-            loop=self.loop
-        )
-        
-        # 4. Standard File Operations
+        # 2. Sentinel-Elite Toolkits
+        self.browser_toolkit = BrowserToolkit(headless=False)
+        self.code_exec_toolkit = CodeExecutionToolkit(sandbox="subprocess")
+        self.skill_toolkit = SkillToolkit(working_directory="skills/")
+        self.terminal_toolkit = TerminalToolkit(working_directory=target_path)
         self.file_toolkit = FileToolkit(working_directory=target_path)
+        self.excel_toolkit = ExcelToolkit(working_directory=os.path.join(target_path, "report"))
         
-        # 5. Excel Operations (for CVE/inventory analysis)
-        self.excel_toolkit = ExcelToolkit()
-        
-        # 6. Combined Workforce Tools
-        # 'wrap_toolkit_with_exclusion' applies path safety, observability, and schema fixes
+        # 3. Combined Workforce Tools
         self.tools = wrap_toolkit_with_exclusion([
             *self.file_toolkit.get_tools(),
-            *self.interpreter_toolkit.get_tools(),
+            *self.terminal_toolkit.get_tools(),
             *self.excel_toolkit.get_tools(),
+            *self.browser_toolkit.get_tools(),
+            *self.code_exec_toolkit.get_tools(),
+            *self.skill_toolkit.get_tools(),
             *self.search_tools
         ])
 
-        # 7. Build the underlying agent
+        # 4. Build the underlying agent
         self.agent = ChatAgent(
             system_message=AUDITOR_SYS_MSG,
             model=self.model,
-            tools=self.tools
+            tools=self.tools,
+            token_limit=200000,
+            summarize_threshold=80,
+            prune_tool_calls_from_memory=True
         )
         
-        logger.info(f"Auditor Agent enriched with Excel capabilities for {target_path}")
+        logger.info(f"Auditor Agent upgraded to Sentinel-Elite for {target_path}")

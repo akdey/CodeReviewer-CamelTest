@@ -18,6 +18,9 @@ dependencies = [
     "aiofiles>=24.1.0",
     "python-multipart>=0.0.12",
     "playwright>=1.46.0",
+    "torch>=2.11.0",
+    "rouge>=1.0.1",
+    "pandas>=3.0.2",
 ]
 
 [build-system]

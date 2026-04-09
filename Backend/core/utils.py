@@ -97,6 +97,9 @@ def _create_safe_tool_wrapper(original_func):
     """
     @functools.wraps(original_func)
     def safe_wrapper(*args, **kwargs):
+        # 0. Identify tool name early to avoid UnboundLocalError
+        func_name = original_func.__name__.lower()
+
         # 1. Path Safety Check
         all_path_candidates = list(args) + list(kwargs.values())
         for candidate in all_path_candidates:
@@ -109,22 +112,42 @@ def _create_safe_tool_wrapper(original_func):
         try:
             result = original_func(*args, **kwargs)
         except Exception as e:
-            logger.error(f"Tool execution failed in safe_wrapper [{original_func.__name__}]: {e}")
+            logger.error(f"Tool execution failed in safe_wrapper [{func_name}]: {e}")
             return f"Tool execution failed: {str(e)}"
 
-        # 3. Terminal Observability
-        # Distinguish shell commands for dashboard streaming
-        func_name = original_func.__name__.lower()
-        is_shell = any(term in func_name for term in ["terminal", "shell", "exec", "run_command"])
+        # 3. Aggressive Truncation for LLM Context
+        # This prevents the "Summarization Loop" by ensuring no single tool output 
+        # exceeds a reasonable token count.
+        char_limit = 50000 
+        result_str = str(result)
         
+        if len(result_str) > char_limit:
+            logger.warning(f"Truncating massive output from tool '{func_name}' ({len(result_str)} chars)")
+            result_str = result_str[:char_limit] + "\n\n... [OUTPUT TRUNCATED BY SENTINEL-ELITE SAFETY LAYER] ..."
+
+        # 4. Observability & Streaming
+        is_shell = any(term in func_name for term in ["terminal", "shell", "exec", "run_command", "run_shell"])
+        is_browser = any(term in func_name for term in ["browser", "playwright", "click", "navigate", "page"])
+        is_code = any(term in func_name for term in ["execute_code", "run_code", "interpret"])
+
         if is_shell:
-            command = kwargs.get("command") or (args[0] if args and isinstance(args[0], str) else "cli-command")
+            command = kwargs.get("command") or (args[0] if args else "unknown")
             ws_manager.emit("terminal_stream", {
                 "command": str(command),
-                "output": str(result)[:3000] # Truncate massive outputs
+                "output": result_str[:15000] 
+            })
+        elif is_browser:
+            ws_manager.emit("system", {
+                "message": f"Browser Action: {func_name}",
+                "type": "tactical_browser"
+            })
+        elif is_code:
+            ws_manager.emit("terminal_stream", {
+                "command": "Running Reproduced Code Block...",
+                "output": result_str[:15000]
             })
             
-        return result
+        return result_str
         
     return safe_wrapper
 
@@ -133,23 +156,25 @@ def wrap_toolkit_with_exclusion(tools: List[Any]) -> List[Any]:
     Unified entrypoint for securing and observing a list of agent tools.
     Corrects openai_tool_schema to eliminate Azure/OpenAI 400 validation errors.
     """
-    for tool in tools:
-        # Wrap the function logic using the factory function to preserve closures
-        tool.func = _create_safe_tool_wrapper(tool.func)
-        
-        # Stabilize JSON schema for strict Azure/OpenAI validation
-        # verified: uses 'openai_tool_schema' in this environment
-        if hasattr(tool, 'openai_tool_schema'):
-            # The schema is stored in tool.openai_tool_schema['function']['parameters']
-            if "function" in tool.openai_tool_schema and "parameters" in tool.openai_tool_schema["function"]:
-                tool.openai_tool_schema["function"]["parameters"] = fix_tool_schema(
-                    tool.openai_tool_schema["function"]["parameters"]
-                )
+    wrapped_tools = []
+    for t in tools:
+        if hasattr(t, 'func'):
+            t.func = _create_safe_tool_wrapper(t.func)
+            if hasattr(t, 'openai_tool_schema'):
+                if "function" in t.openai_tool_schema and "parameters" in t.openai_tool_schema["function"]:
+                    t.openai_tool_schema["function"]["parameters"] = fix_tool_schema(
+                        t.openai_tool_schema["function"]["parameters"]
+                    )
+            wrapped_tools.append(t)
+        elif callable(t):
+            from camel.toolkits import FunctionTool
+            new_tool = FunctionTool(t)
+            new_tool.func = _create_safe_tool_wrapper(new_tool.func)
+            wrapped_tools.append(new_tool)
+        else:
+            wrapped_tools.append(t)
             
-    return tools
+    return wrapped_tools
 
 def observe_toolkit():
-    """
-    DEPRECATED: Provided for backwards compatibility.
-    """
     return lambda x: x

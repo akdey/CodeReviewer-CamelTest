@@ -28,3 +28,8 @@ npm-debug.log*
 Backend/app.log
 terminal_logs/
 context_files
+
+# Sentinel-Elite Artifacts
+.sentinel_repro/
+report/
+skills/
